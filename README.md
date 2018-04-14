@@ -1,13 +1,12 @@
 # convis
 A tool to visualize convolutional layer activations on an input image. This is a PyTorch implementation of [convis](https://github.com/htoyryla/convis).
 
-<div align="center">An output image from a single channel (left), and a layer heatmap (right):</div>
-
 
 <div align="center">
 <img src="https://raw.githubusercontent.com/ProGamerGov/pytorch-convis/master/examples/output/tubingen-conv3_2-16.jpg" height="250px">
 <img src="https://raw.githubusercontent.com/ProGamerGov/pytorch-convis/master/examples/output/tubingen_vgg19_relu4_2_heatmap.jpg" height="250px">
 </div>
+<div align="center">An output image from a single channel (left), and a layer heatmap (right):</div>
 
 ### Dependencies:
 
