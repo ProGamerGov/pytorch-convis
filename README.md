@@ -10,7 +10,7 @@ A tool to visualize convolutional layer activations on an input image. This is a
 
 ### Dependencies:
 
-[PyTorch](http://pytorch.org/)
+* [PyTorch](http://pytorch.org/)
 
 ### Setup: 
 
