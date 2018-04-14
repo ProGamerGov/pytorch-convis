@@ -3,7 +3,11 @@ A tool to visualize convolutional layer activations on an input image. This is a
 
 Creates images in which the input image is highlighted by each filter in the given conv layer.
 
-<img src="https://raw.githubusercontent.com/ProGamerGov/pytorch-convis/master/examples/output/tubingen-conv3_2-16.jpg" width="480">
+
+<div align="center">
+<img src="https://raw.githubusercontent.com/ProGamerGov/pytorch-convis/master/examples/output/tubingen-conv3_2-16.jpg" height="250px">
+<img src="https://raw.githubusercontent.com/ProGamerGov/pytorch-convis/master/examples/output/tubingen_vgg19_relu4_2_heatmap.jpg" height="250px">
+</div>
 
 ### Dependencies:
 
