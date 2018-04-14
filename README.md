@@ -1,5 +1,5 @@
 # convis
-A tool to visualize convolutional layer activations on an input image. This is a PyTorch implementation of [convis](https://github.com/htoyryla/convis).
+A tool to visualize convolutional, ReLU, and pooling layer activations on an input image. This is a PyTorch implementation of [convis](https://github.com/htoyryla/convis).
 
 
 <div align="center">
