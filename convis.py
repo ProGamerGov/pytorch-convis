@@ -1,4 +1,3 @@
-# A PyTorch implementation of: https://gist.github.com/ProGamerGov/8f0560d8aea77c8c39c4d694b711e123
 import os
 import copy
 import torch
