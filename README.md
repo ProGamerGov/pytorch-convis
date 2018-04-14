@@ -11,7 +11,7 @@ PyTorch
 
 ### Setup: 
 
-After installing dependencies, you'll need to run the following script to download the default VGG and NIN models:
+After installing the dependencies, you'll need to run the following script to download the default VGG and NIN models:
 
 ```
 python models/download_models.py
