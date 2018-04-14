@@ -17,7 +17,7 @@ After installing dependencies, you'll need to run the following script to downlo
 python models/download_models.py
 ```
 
-
+You can also place `convis.py` or `convis_heatmap.py` in your neural-style-pt directory, in order to to more easily work with models and input images. 
 
 ### Usage:
 
@@ -32,8 +32,6 @@ python convis.py -image examples/inputs/tubingen.jpg -model models/vgg19-d01eb7c
 ```
 python convis_heatmap.py -image examples/inputs/tubingen.jpg -model models/vgg19-d01eb7cb.pth -layer relu4_2 -seed 876
 ```
- 
-You can also place `convis.py` or `convis_heatmap.py` in your neural-style-pt directory, in order to to more easily work with models and input images. 
  
 ### Parameters:
 
