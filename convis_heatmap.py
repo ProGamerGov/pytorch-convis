@@ -14,7 +14,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-input_image", help="Input target image", default='examples/inputs/tubingen.jpg')
 parser.add_argument("-image_size", help="Maximum height / width of generated image", type=int, default=512)
-parser.add_argument("-model_file", type=str, default='vgg19-d01eb7cb.pth')
+parser.add_argument("-model_file", type=str, default='models/vgg19-d01eb7cb.pth')
 parser.add_argument("-seed", type=int, default=-1)
 parser.add_argument("-layer", help="layers for examination", default='relu2_2')
 parser.add_argument("-pooling", help="max or avg pooling", type=str, default='max')
