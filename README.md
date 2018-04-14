@@ -1,5 +1,5 @@
 # convis
-A tool to visualize convolutional layer activations on an input image.  
+A tool to visualize convolutional layer activations on an input image. This is a PyTorch implementation of [convis](https://github.com/htoyryla/convis).
 
 Creates images in which the input image is highlighted by each filter in the given conv layer.
 
@@ -14,8 +14,12 @@ PyTorch
 ```
 python convis.py -image examples/inputs/tubingen.jpg -model models/vgg19-d01eb7cb.pth -layer conv2_2 -output_dir output -seed 876
 ```
+
+```
+python convis_heatmap.py -image examples/inputs/tubingen.jpg -model models/vgg19-d01eb7cb.pth -layer relu4_2 -seed 876
+```
  
-You can also place `convis.py` in your neural-style-pt directory, in order to to more easily work with models and input images. 
+You can also place `convis.py` or `convis_heatmap.py` in your neural-style-pt directory, in order to to more easily work with models and input images. 
  
 ### Parameters:
 
