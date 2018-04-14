@@ -11,9 +11,13 @@ PyTorch
 
 ### Usage:
 
+`convis.py` will create an output image for every channel in the specified layer:
+
 ```
 python convis.py -image examples/inputs/tubingen.jpg -model models/vgg19-d01eb7cb.pth -layer conv2_2 -output_dir output -seed 876
 ```
+
+`convis_heatmap.py` will create a single output image composed of every channel in the specified layer:
 
 ```
 python convis_heatmap.py -image examples/inputs/tubingen.jpg -model models/vgg19-d01eb7cb.pth -layer relu4_2 -seed 876
