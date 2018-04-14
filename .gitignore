@@ -1,0 +1,7 @@
+*.swp
+out*.png
+*.png
+*.jpg
+*.pth
+models/
+!models/download_models.py
