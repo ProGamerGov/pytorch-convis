@@ -14,7 +14,7 @@ import argparse
 parser = argparse.ArgumentParser()
 parser.add_argument("-input_image", help="Input target image", default='examples/inputs/tubingen.jpg')
 parser.add_argument("-image_size", help="Maximum height / width of generated image", type=int, default=512)
-parser.add_argument("-model_file", type=str, default='vgg19-d01eb7cb.pth')
+parser.add_argument("-model_file", type=str, default='models/vgg19-d01eb7cb.pth')
 parser.add_argument("-seed", type=int, default=-1)
 parser.add_argument("-layer", help="layers for examination", default='relu2_2')
 parser.add_argument("-pooling", help="max or avg pooling", type=str, default='max')
@@ -123,5 +123,5 @@ for i in xrange(n):
     y3[2] = y1.data
 
 
-    filename = str(params.output_dir) + "/" +str(output_filename) + "_" + str(i) + "_" + str(params.layer) + file_extension
+    filename = str(params.output_dir) + "/" + str(output_filename) + "-" + str(params.layer) + "-" + str(i) + file_extension
     SaveImage(y3, filename)
