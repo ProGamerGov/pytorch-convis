@@ -9,6 +9,16 @@ Creates images in which the input image is highlighted by each filter in the giv
 
 PyTorch 
 
+### Setup: 
+
+After installing dependencies, you'll need to run the following script to download the default VGG and NIN models:
+
+```
+python models/download_models.py
+```
+
+
+
 ### Usage:
 
 `convis.py` will create an output image for every channel in the specified layer:
