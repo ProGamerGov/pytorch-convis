@@ -38,9 +38,11 @@ def ImageSetup(image_name, image_size):
  
 # Undo the above preprocessing and save the tensor as an image:
 def SaveImage(output_tensor, output_name):
+    image = Image.open(params.input_image).convert('RGB')
+    image_size = tuple([int((float(params.image_size) / max(image.size))*x) for x in (image.height, image.width)]) 
     Normalize = transforms.Compose([transforms.Normalize(mean=[-103.939, -116.779, -123.68], std=[1,1,1]) ]) # Add BGR
     bgr2rgb = transforms.Compose([transforms.Lambda(lambda x: x[torch.LongTensor([2,1,0])]) ])
-    ResizeImage = transforms.Compose([transforms.Resize(params.image_size)])
+    ResizeImage = transforms.Compose([transforms.Resize(image_size)])
     output_tensor = bgr2rgb(Normalize(output_tensor.squeeze(0))) / 256
     output_tensor.clamp_(0, 1)
     Image2PIL = transforms.ToPILImage()
@@ -115,7 +117,6 @@ y = torch.sum(fmaps, 1)
 m = y.max()
 y = y.mul_(255).div_(m)
 
-print(y.size())
 y3 = torch.Tensor(3, y.size(1), y.size(2))
 y1 = y[0]
 
