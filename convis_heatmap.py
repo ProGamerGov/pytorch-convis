@@ -28,8 +28,8 @@ if params.seed >= 0:
 
 # Preprocess an image before passing it to a model: 
 def ImageSetup(image_name, image_size):
-    image = Image.open(image_name)
-    image = image.convert('RGB')
+    image = Image.open(image_name).convert('RGB')
+    image_size = tuple([int((float(image_size) / max(image.size))*x) for x in (image.height, image.width)]) 
     Loader = transforms.Compose([transforms.Resize(image_size), transforms.ToTensor()])  # resize and convert to tensor
     rgb2bgr = transforms.Compose([transforms.Lambda(lambda x: x[torch.LongTensor([2,1,0])]) ])
     Normalize = transforms.Compose([transforms.Normalize(mean=[103.939, 116.779, 123.68], std=[1,1,1]) ]) # Subtract BGR
