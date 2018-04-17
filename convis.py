@@ -38,8 +38,8 @@ def ImageSetup(image_name, image_size):
     return tensor
  
 # Undo the above preprocessing and save the tensor as an image:
-def SaveImage(output_tensor, output_name, image_name):
-    image = Image.open(image_name).convert('RGB')
+def SaveImage(output_tensor, output_name):
+    image = Image.open(params.input_image).convert('RGB')
     image_size = tuple([int((float(params.image_size) / max(image.size))*x) for x in (image.height, image.width)]) 
     Normalize = transforms.Compose([transforms.Normalize(mean=[-103.939, -116.779, -123.68], std=[1,1,1]) ]) # Add BGR
     bgr2rgb = transforms.Compose([transforms.Lambda(lambda x: x[torch.LongTensor([2,1,0])]) ])
@@ -126,5 +126,5 @@ for i in xrange(n):
 
 
     filename = str(params.output_dir) + "/" + str(output_filename) + "-" + str(params.layer) + "-" + str(i) + file_extension
-    SaveImage(y3, filename, params.input_image)
+    SaveImage(y3, filename)
     print("Saving image: " + filename)
