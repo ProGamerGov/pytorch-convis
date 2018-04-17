@@ -124,3 +124,4 @@ for i in xrange(n):
 
     filename = str(params.output_dir) + "/" + str(output_filename) + "-" + str(params.layer) + "-" + str(i) + file_extension
     SaveImage(y3, filename)
+    print("Saving image: " + filename)
