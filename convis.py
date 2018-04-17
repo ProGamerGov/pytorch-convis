@@ -26,10 +26,11 @@ params = parser.parse_args()
 if params.seed >= 0:
     torch.manual_seed(params.seed)
 
+
 # Preprocess an image before passing it to a model: 
 def ImageSetup(image_name, image_size):
-    image = Image.open(image_name)
-    image = image.convert('RGB')
+    image = Image.open(image_name).convert('RGB')
+    image_size = tuple([int((float(image_size) / max(image.size))*x) for x in (image.height, image.width)]) 
     Loader = transforms.Compose([transforms.Resize(image_size), transforms.ToTensor()])  # resize and convert to tensor
     rgb2bgr = transforms.Compose([transforms.Lambda(lambda x: x[torch.LongTensor([2,1,0])]) ])
     Normalize = transforms.Compose([transforms.Normalize(mean=[103.939, 116.779, 123.68], std=[1,1,1]) ]) # Subtract BGR
@@ -38,9 +39,11 @@ def ImageSetup(image_name, image_size):
  
 # Undo the above preprocessing and save the tensor as an image:
 def SaveImage(output_tensor, output_name):
+    image = Image.open(params.input_image).convert('RGB')
+    image_size = tuple([int((float(params.image_size) / max(image.size))*x) for x in (image.height, image.width)]) 
     Normalize = transforms.Compose([transforms.Normalize(mean=[-103.939, -116.779, -123.68], std=[1,1,1]) ]) # Add BGR
     bgr2rgb = transforms.Compose([transforms.Lambda(lambda x: x[torch.LongTensor([2,1,0])]) ])
-    ResizeImage = transforms.Compose([transforms.Resize(params.image_size)])
+    ResizeImage = transforms.Compose([transforms.Resize(image_size)])
     output_tensor = bgr2rgb(Normalize(output_tensor.squeeze(0))) / 256
     output_tensor.clamp_(0, 1)
     Image2PIL = transforms.ToPILImage()
@@ -124,3 +127,4 @@ for i in xrange(n):
 
     filename = str(params.output_dir) + "/" + str(output_filename) + "-" + str(params.layer) + "-" + str(i) + file_extension
     SaveImage(y3, filename)
+    print("Saving image: " + filename)
