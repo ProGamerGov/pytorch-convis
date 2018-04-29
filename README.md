@@ -41,7 +41,6 @@ python convis_heatmap.py -input_image examples/inputs/tubingen.jpg -model_file m
 * `-input_image`: Path to the input image.
 * `-image_size`: Maximum side length (in pixels) of the generated image. Default is 512.
 * `-layer`: The target layer. Default is `relu4_2`
-* `-seed`: An optional value which makes all random values deterministic. 
 * `-pooling`: The type of pooling layers to use; one of `max` or `avg`. Default is `max`.
 * `-model_file`: Path to the `.pth` file for the VGG or NIN model.
 * `-output_image`: Name of the output image. Default is `out.png`.
