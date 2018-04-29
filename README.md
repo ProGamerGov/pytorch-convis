@@ -27,13 +27,13 @@ You can also place `convis.py` or `convis_heatmap.py` in your [neural-style-pt](
 `convis.py` will create an output image for every channel in the specified layer:
 
 ```
-python convis.py -input_image examples/inputs/tubingen.jpg -model_file models/vgg19-d01eb7cb.pth -layer conv2_2 -output_dir output -seed 876
+python convis.py -input_image examples/inputs/tubingen.jpg -model_file models/vgg19-d01eb7cb.pth -layer conv2_2 -output_dir output
 ```
 
 `convis_heatmap.py` will create a single output image composed of every channel in the specified layer:
 
 ```
-python convis_heatmap.py -input_image examples/inputs/tubingen.jpg -model_file models/vgg19-d01eb7cb.pth -layer relu4_2 -seed 876
+python convis_heatmap.py -input_image examples/inputs/tubingen.jpg -model_file models/vgg19-d01eb7cb.pth -layer relu4_2
 ```
  
 ### Parameters:
