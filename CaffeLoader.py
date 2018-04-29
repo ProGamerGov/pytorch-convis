@@ -116,7 +116,7 @@ def modelSelector(model_file, pooling):
     else:
         print("Model Architecture Not Recognized")
         raise ValueError("""Model Architecture Not Recognized. Please ensure that the model
-        name contains either "vgg16", "vgg16", or "nin", in the file name.""")       
+        name contains either "vgg16", "vgg19", or "nin", in the file name.""")       
     return cnn, layerList
 
 # Print like Lua/loadcaffe
