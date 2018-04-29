@@ -8,7 +8,7 @@ import torchvision.transforms as transforms
 
 from PIL import Image
 from torch.autograd import Variable
-from CVGG import vgg19, vgg16, nin
+from CaffeLoader import loadCaffemodel
 
 import argparse
 parser = argparse.ArgumentParser()
@@ -22,12 +22,65 @@ parser.add_argument("-output_image", default='out.png')
 params = parser.parse_args()
 
 
-# Optionally set the seed value
-if params.seed >= 0:
-    torch.manual_seed(params.seed)
+Image.MAX_IMAGE_PIXELS = 1000000000 # Support gigapixel images
 
-# Preprocess an image before passing it to a model: 
-def ImageSetup(image_name, image_size):
+def main(): 
+    # Build the model definition and setup pooling layers:   
+    cnn, layerList = loadCaffemodel(params.model_file, params.pooling, -1) 
+
+    img = preprocess(params.input_image, params.image_size).float()
+
+    cnn = copy.deepcopy(cnn)
+    net = nn.Sequential()  
+    c, r, p = 0, 0, 0
+    convName, reluName, poolName = None, None, None
+    for layer in list(cnn):
+        if isinstance(layer, nn.Conv2d):
+            net.add_module(str(len(net)), layer)
+            convName = layerList['C'][c]
+            c+=1
+
+        if isinstance(layer, nn.ReLU):
+            net.add_module(str(len(net)), layer)
+            reluName = layerList['R'][r]
+            r+=1
+
+        if isinstance(layer, nn.MaxPool2d) or isinstance(layer, nn.AvgPool2d):
+            net.add_module(str(len(net)), layer) 
+            poolName = layerList['P'][p]
+            p+=1
+
+        if convName == params.layer or reluName == params.layer or poolName == params.layer:
+            break
+
+
+    # Initialize the image
+    if params.seed >= 0:
+        torch.manual_seed(params.seed)
+
+  
+    # Get the activations
+    fmaps = net(img)
+
+    y = torch.sum(fmaps, 1)
+    m = y.max()
+    y = y.mul_(255).div_(m)
+
+    y3 = torch.Tensor(3, y.size(1), y.size(2))
+    y1 = y[0]
+
+    y3[0] = y1.data
+    y3[1] = y1.data
+    y3[2] = y1.data
+
+    print("Saving image")
+    deprocess(y3, params.output_image)
+
+
+# Preprocess an image before passing it to a model.
+# We need to rescale from [0, 1] to [0, 255], convert from RGB to BGR,
+# and subtract the mean pixel.
+def preprocess(image_name, image_size):
     image = Image.open(image_name).convert('RGB')
     image_size = tuple([int((float(image_size) / max(image.size))*x) for x in (image.height, image.width)]) 
     Loader = transforms.Compose([transforms.Resize(image_size), transforms.ToTensor()])  # resize and convert to tensor
@@ -37,7 +90,7 @@ def ImageSetup(image_name, image_size):
     return tensor
  
 # Undo the above preprocessing and save the tensor as an image:
-def SaveImage(output_tensor, output_name):
+def deprocess(output_tensor, output_name):
     image = Image.open(params.input_image).convert('RGB')
     image_size = tuple([int((float(params.image_size) / max(image.size))*x) for x in (image.height, image.width)]) 
     Normalize = transforms.Compose([transforms.Normalize(mean=[-103.939, -116.779, -123.68], std=[1,1,1]) ]) # Add BGR
@@ -51,78 +104,5 @@ def SaveImage(output_tensor, output_name):
     image.save(str(output_name))
     
     
-img = ImageSetup(params.input_image, params.image_size).float()
-
-
-
-# Get the model class, and configure pooling layer type
-def buildCNN(model_file, pooling):
-    cnn = None
-    layerList = []
-    if "vgg19" in str(model_file):
-        print("VGG-19 Architecture Detected")
-        cnn, layerList = vgg19(pooling)
-    elif "vgg16" in str(model_file):
-        print("VGG-16 Architecture Detected")
-        cnn, layerList = vgg16(pooling)
-    elif "nin" in str(model_file):
-        print("NIN Architecture Detected")
-        cnn, layerList = nin(pooling)
-    return cnn, layerList
-
-  
-def modelSetup(cnn, layerList):
-    cnn = copy.deepcopy(cnn)
-    net = nn.Sequential()  
-    l, c, r, p = 0, 0, 0, 0
-    convName, reluName, poolName = None, None, None
-    for layer in list(cnn):
-        if isinstance(layer, nn.Conv2d):
-            net.add_module(str(l), layer)
-            layerType = layerList['C']
-            convName = layerType[c]
-            l+=1
-            c+=1
-
-        if isinstance(layer, nn.ReLU):
-            net.add_module(str(l), layer)
-            layerType = layerList['R']
-            reluName = layerType[r]
-            l+=1
-            r+=1
-
-        if isinstance(layer, nn.MaxPool2d) or isinstance(layer, nn.AvgPool2d):
-            net.add_module(str(l), layer)  # ***
-            layerType = layerList['P']
-            poolName = layerType[p]
-            l+=1
-            p+=1
-        if convName == params.layer or reluName == params.layer or poolName == params.layer:
-            return net
-
-
-    return net
-    
-    
-    
-cnn, layerList = buildCNN(params.model_file, params.pooling)   
-cnn.load_state_dict(torch.load(params.model_file))
-cnn = cnn.features 
-net = modelSetup(cnn, layerList)
-
-fmaps = net(img)
-
-
-y = torch.sum(fmaps, 1)
-m = y.max()
-y = y.mul_(255).div_(m)
-
-y3 = torch.Tensor(3, y.size(1), y.size(2))
-y1 = y[0]
-
-
-y3[0] = y1.data
-y3[1] = y1.data
-y3[2] = y1.data
-
-SaveImage(y3, params.output_image)
+if __name__ == "__main__":
+    main()

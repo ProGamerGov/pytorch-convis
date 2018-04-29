@@ -20,7 +20,6 @@ class VGG(nn.Module):
 class NIN(nn.Module):
     def __init__(self, pooling):
         super(NIN, self).__init__()
-        pool2d = None
         if pooling == 'max':
             pool2d = nn.MaxPool2d((3, 3),(2, 2),(0, 0),ceil_mode=True)
         elif pooling == 'avg':
@@ -61,16 +60,16 @@ class NIN(nn.Module):
  
 
 		
-def BuildSequential(channel_list, pooling):
+def buildSequential(channel_list, pooling):
     layers = []
     in_channels = 3
     if pooling == 'max':
-       pool2d = nn.MaxPool2d(kernel_size=2, stride=2)
+        pool2d = nn.MaxPool2d(kernel_size=2, stride=2)
     elif pooling == 'avg':
-       pool2d = nn.AvgPool2d(kernel_size=2, stride=2)
+        pool2d = nn.AvgPool2d(kernel_size=2, stride=2)
     else: 
-       print("Unrecognized pooling parameter")
-       quit()
+        print("Unrecognized pooling parameter")
+        quit()
     for c in channel_list:
         if c == 'P':
             layers += [pool2d]
@@ -82,8 +81,8 @@ def BuildSequential(channel_list, pooling):
 
 
 channel_list = {
-    'D': [64, 64, 'P', 128, 128, 'P', 256, 256, 256, 'P', 512, 512, 512, 'P', 512, 512, 512, 'P'],
-    'E': [64, 64, 'P', 128, 128, 'P', 256, 256, 256, 256, 'P', 512, 512, 512, 512, 'P', 512, 512, 512, 512, 'P'],
+'VGG-16': [64, 64, 'P', 128, 128, 'P', 256, 256, 256, 'P', 512, 512, 512, 'P', 512, 512, 512, 'P'],
+'VGG-19': [64, 64, 'P', 128, 128, 'P', 256, 256, 256, 256, 'P', 512, 512, 512, 512, 'P', 512, 512, 512, 512, 'P'],
 }
 
 nin_dict = {
@@ -104,17 +103,44 @@ vgg19_dict = {
 }
 
 
-def vgg19(pooling, **kwargs):
-    # VGG 19-layer model (configuration "E")
-    model = VGG(BuildSequential(channel_list['E'], pooling), **kwargs)
-    return model, vgg19_dict
+def modelSelector(model_file, pooling):
+    if "vgg19" in str(model_file):
+        print("VGG-19 Architecture Detected")
+        cnn, layerList = VGG(buildSequential(channel_list['VGG-19'], pooling)), vgg19_dict
+    elif "vgg16" in str(model_file):
+        print("VGG-16 Architecture Detected")
+        cnn, layerList = VGG(buildSequential(channel_list['VGG-16'], pooling)), vgg16_dict
+    elif "nin" in str(model_file):
+        print("NIN Architecture Detected")
+        cnn, layerList = NIN(pooling), nin_dict
+    else:
+        print("Model Architecture Not Recognized")
+        raise ValueError("""Model Architecture Not Recognized. Please ensure that the model
+        name contains either "vgg16", "vgg16", or "nin", in the file name.""")       
+    return cnn, layerList
 
-def vgg16(pooling, **kwargs):
-    # VGG 16-layer model (configuration "D")
-    model = VGG(BuildSequential(channel_list['D'], pooling), **kwargs)
-    return model, vgg16_dict
+# Print like Lua/loadcaffe
+def print_loadcaffe(cnn, layerList): 
+    c = 0
+    for l in list(cnn):
+         if "Conv2d" in str(l):
+             in_c, out_c, ks  = str(l.in_channels), str(l.out_channels), str(l.kernel_size)
+             print(layerList['C'][c] +": " +  (out_c + " " + in_c + " " + ks).replace(")",'').replace("(",'').replace(",",'') )
+             c+=1
+         if c == len(layerList['C']):
+             break
 
-def nin(pooling, **kwargs):
-    # Network In Network model 
-    model = NIN(pooling)
-    return model, nin_dict
+# Get the model class, and configure pooling layer type
+def loadCaffemodel(model_file, pooling, use_gpu):
+    cnn, layerList = modelSelector(model_file, pooling)
+    cnn.load_state_dict(torch.load(model_file))
+    print("Successfully loaded " + str(model_file))
+
+    # Maybe convert the model to cuda now, to avoid later issues
+    if use_gpu == '0':
+        cnn = cnn.cuda()
+    cnn = cnn.features 
+
+    print_loadcaffe(cnn, layerList)
+
+    return cnn, layerList

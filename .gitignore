@@ -3,5 +3,7 @@ out*.png
 *.png
 *.jpg
 *.pth
+*.pyc
+output/
 models/
 !models/download_models.py
