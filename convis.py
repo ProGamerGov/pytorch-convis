@@ -27,7 +27,7 @@ def main():
     # Build the model definition and setup pooling layers:   
     cnn, layerList = loadCaffemodel(params.model_file, params.pooling, -1) 
 
-    img = preprocess(params.input_image, params.image_size).float()    
+    img, image_size = preprocess(params.input_image, params.image_size)    
 
     output_filename, file_extension = os.path.splitext(params.output_image)
     try:
@@ -67,13 +67,13 @@ def main():
         y3 = torch.Tensor(3, y.size(1), y.size(2))
         y1 = y.clone().narrow(0,i,1)
 
-        y3[0] = y1.data
-        y3[1] = y1.data
-        y3[2] = y1.data
+        y3[0] = y1
+        y3[1] = y1
+        y3[2] = y1
 
 
         filename = str(params.output_dir) + "/" + str(output_filename) + "-" + str(params.layer) + "-" + str(i) + file_extension
-        deprocess(y3, filename)
+        deprocess(y3, image_size, filename)
         print("Saving image: " + filename)
 
         if i == (n-1): 
@@ -90,19 +90,17 @@ def preprocess(image_name, image_size):
     rgb2bgr = transforms.Compose([transforms.Lambda(lambda x: x[torch.LongTensor([2,1,0])]) ])
     Normalize = transforms.Compose([transforms.Normalize(mean=[103.939, 116.779, 123.68], std=[1,1,1]) ]) # Subtract BGR
     tensor = Variable(Normalize(rgb2bgr(Loader(image) * 256))).unsqueeze(0)
-    return tensor
+    return tensor.float(), image_size
  
 # Undo the above preprocessing and save the tensor as an image:
-def deprocess(output_tensor, output_name):
-    image = Image.open(params.input_image).convert('RGB')
-    image_size = tuple([int((float(params.image_size) / max(image.size))*x) for x in (image.height, image.width)]) 
+def deprocess(output_tensor, image_size, output_name):
     Normalize = transforms.Compose([transforms.Normalize(mean=[-103.939, -116.779, -123.68], std=[1,1,1]) ]) # Add BGR
     bgr2rgb = transforms.Compose([transforms.Lambda(lambda x: x[torch.LongTensor([2,1,0])]) ])
     ResizeImage = transforms.Compose([transforms.Resize(image_size)])
     output_tensor = bgr2rgb(Normalize(output_tensor.squeeze(0))) / 256
     output_tensor.clamp_(0, 1)
     Image2PIL = transforms.ToPILImage()
-    image = Image2PIL(output_tensor.cpu())
+    image = Image2PIL(output_tensor)
     image = ResizeImage(image)
     image.save(str(output_name))
     
