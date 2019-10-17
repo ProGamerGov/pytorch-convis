@@ -6,7 +6,6 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 
 from PIL import Image
-from torch.autograd import Variable
 from CaffeLoader import loadCaffemodel
 
 import argparse
@@ -18,6 +17,7 @@ parser.add_argument("-layer", help="layers for examination", default='relu2_2')
 parser.add_argument("-pooling", help="max or avg pooling", type=str, default='max')
 parser.add_argument("-output_image", default='out.png')
 parser.add_argument("-output_dir", default='output')
+parser.add_argument("-disable_check", action='store_true')
 params = parser.parse_args()
 
 
@@ -25,7 +25,7 @@ Image.MAX_IMAGE_PIXELS = 1000000000 # Support gigapixel images
 
 def main(): 
     # Build the model definition and setup pooling layers:   
-    cnn, layerList = loadCaffemodel(params.model_file, params.pooling, -1) 
+    cnn, layerList = loadCaffemodel(params.model_file, params.pooling, 'c', params.disable_check) 
 
     img, image_size = preprocess(params.input_image, params.image_size)    
 
