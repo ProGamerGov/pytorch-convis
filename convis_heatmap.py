@@ -82,7 +82,7 @@ def preprocess(image_name, image_size):
     rgb2bgr = transforms.Compose([transforms.Lambda(lambda x: x[torch.LongTensor([2,1,0])])])
     Normalize = transforms.Compose([transforms.Normalize(mean=[103.939, 116.779, 123.68], std=[1,1,1])])
     tensor = Normalize(rgb2bgr(Loader(image) * 256)).unsqueeze(0)
-    return tensor
+    return tensor, image_size
  
 # Undo the above preprocessing and save the tensor as an image:
 def deprocess(output_tensor, output_name):
