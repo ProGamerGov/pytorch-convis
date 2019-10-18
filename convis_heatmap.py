@@ -23,10 +23,7 @@ params = parser.parse_args()
 
 Image.MAX_IMAGE_PIXELS = 1000000000 # Support gigapixel images
 
-def main(): 
-
-		
-    # Build the model definition and setup pooling layers:   
+def main(): 		
     cnn, layerList = loadCaffemodel(params.model_file, params.pooling, 'c', params.disable_check) 
 
     img = preprocess(params.input_image, params.image_size).float()
@@ -57,20 +54,21 @@ def main():
   
     # Get the activations
     fmaps = net(img)
-	
-	
+		
     y = torch.sum(fmaps, 1)
     m = y.max()
 	
-    y = y.mul_(255).div_(m)	
-
+    if params.model_type == 'caffe':
+        y = y.mul(255).div(m)
+    else:
+        y = y.div(m)
+		 
     y3 = torch.Tensor(3, y.size(1), y.size(2))
     y1 = y[0]
 
     y3[0] = y1.data
     y3[1] = y1.data
-    y3[2] = y1.data
-	
+    y3[2] = y1.data	
 
     print("Saving image")
     deprocess(y3.detach(), params.output_image)
@@ -86,26 +84,28 @@ def preprocess(image_name, image_size):
     Loader = transforms.Compose([transforms.Resize(image_size), transforms.ToTensor()])
     rgb2bgr = transforms.Compose([transforms.Lambda(lambda x: x[torch.LongTensor([2,1,0])])])    
     NormalizeCaffe = transforms.Compose([transforms.Normalize(mean=[103.939, 116.779, 123.68], std=[1,1,1])])
-    NormalizePyTorch = transforms.Compose([transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
+    NormalizePyTorch = transforms.Compose([transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[1,1,1])])
     if params.model_type == 'pytorch':
         tensor = NormalizePyTorch(Loader(image)).unsqueeze(0)
     else:
         tensor = NormalizeCaffe(rgb2bgr(Loader(image) * 256)).unsqueeze(0)
     return tensor
  
+ 
 # Undo the above preprocessing and save the tensor as an image:
 def deprocess(output_tensor, output_name):
     image = Image.open(params.input_image).convert('RGB')
     image_size = tuple([int((float(params.image_size) / max(image.size))*x) for x in (image.height, image.width)]) 
     NormalizeCaffe = transforms.Compose([transforms.Normalize(mean=[-103.939, -116.779, -123.68], std=[1,1,1]) ]) # Add BGR
-    NormalizePyTorch = transforms.Compose([transforms.Normalize(mean=[-0.485, -0.456, -0.406], std=[-0.229, -0.224, -0.225])])
+    NormalizePyTorch = transforms.Compose([transforms.Normalize(mean=[-0.485, -0.456, -0.406], std=[1,1,1])])
     bgr2rgb = transforms.Compose([transforms.Lambda(lambda x: x[torch.LongTensor([2,1,0])]) ])
     ResizeImage = transforms.Compose([transforms.Resize(image_size)])
     if params.model_type == 'caffe':
         output_tensor = bgr2rgb(NormalizeCaffe(output_tensor.squeeze(0).cpu())) / 256
     else:
-        output_tensor = output_tensor.squeeze(0).cpu()
-    output_tensor.clamp_(0, 1)
+        output_tensor = NormalizePyTorch(output_tensor.squeeze(0).cpu()) 
+				
+    output_tensor.clamp_(0, 1)		
     Image2PIL = transforms.ToPILImage()
     image = Image2PIL(output_tensor.cpu())
     image = ResizeImage(image)
