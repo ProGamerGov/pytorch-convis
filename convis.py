@@ -6,7 +6,6 @@ import torch.optim as optim
 import torchvision.transforms as transforms
 
 from PIL import Image
-from torch.autograd import Variable
 from CaffeLoader import loadCaffemodel
 
 import argparse
@@ -18,6 +17,7 @@ parser.add_argument("-layer", help="layers for examination", default='relu2_2')
 parser.add_argument("-pooling", help="max or avg pooling", type=str, default='max')
 parser.add_argument("-output_image", default='out.png')
 parser.add_argument("-output_dir", default='output')
+parser.add_argument("-disable_check", action='store_true')
 params = parser.parse_args()
 
 
@@ -25,7 +25,7 @@ Image.MAX_IMAGE_PIXELS = 1000000000 # Support gigapixel images
 
 def main(): 
     # Build the model definition and setup pooling layers:   
-    cnn, layerList = loadCaffemodel(params.model_file, params.pooling, -1) 
+    cnn, layerList = loadCaffemodel(params.model_file, params.pooling, 'c', params.disable_check) 
 
     img, image_size = preprocess(params.input_image, params.image_size)    
 
@@ -85,12 +85,13 @@ def main():
 # and subtract the mean pixel.
 def preprocess(image_name, image_size):
     image = Image.open(image_name).convert('RGB')
-    image_size = tuple([int((float(image_size) / max(image.size))*x) for x in (image.height, image.width)]) 
-    Loader = transforms.Compose([transforms.Resize(image_size), transforms.ToTensor()])  # resize and convert to tensor
-    rgb2bgr = transforms.Compose([transforms.Lambda(lambda x: x[torch.LongTensor([2,1,0])]) ])
-    Normalize = transforms.Compose([transforms.Normalize(mean=[103.939, 116.779, 123.68], std=[1,1,1]) ]) # Subtract BGR
-    tensor = Variable(Normalize(rgb2bgr(Loader(image) * 256))).unsqueeze(0)
-    return tensor.float(), image_size
+    if type(image_size) is not tuple:
+        image_size = tuple([int((float(image_size) / max(image.size))*x) for x in (image.height, image.width)])
+    Loader = transforms.Compose([transforms.Resize(image_size), transforms.ToTensor()])
+    rgb2bgr = transforms.Compose([transforms.Lambda(lambda x: x[torch.LongTensor([2,1,0])])])
+    Normalize = transforms.Compose([transforms.Normalize(mean=[103.939, 116.779, 123.68], std=[1,1,1])])
+    tensor = Normalize(rgb2bgr(Loader(image) * 256)).unsqueeze(0)
+    return tensor, image_size
  
 # Undo the above preprocessing and save the tensor as an image:
 def deprocess(output_tensor, image_size, output_name):
